@@ -58,33 +58,33 @@ $nombre_rol = htmlspecialchars($_SESSION['nombre_rol'] ?? '', ENT_QUOTES, 'UTF-8
     <div class="brand">AcademiSys</div>
     <ul>
         <?php if ($rol === ROL_ADMIN): ?>
-            <li><a href="/controllers/admin/carreras_ctrl.php">Carreras</a></li>
-            <li><a href="/controllers/admin/materias_ctrl.php">Materias</a></li>
-            <li><a href="/controllers/admin/planes_ctrl.php">Plan de Estudio</a></li>
-            <li><a href="/controllers/admin/profesores_ctrl.php">Docentes</a></li>
-            <li><a href="/controllers/admin/aulas_ctrl.php">Aulas</a></li>
-            <li><a href="/controllers/admin/alumnos_ctrl.php">Alumnos</a></li>
-            <li><a href="/controllers/admin/ciclos_ctrl.php">Ciclos</a></li>
-            <li><a href="/controllers/admin/usuarios_ctrl.php">Usuarios</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/admin/carreras_ctrl.php">Carreras</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/admin/materias_ctrl.php">Materias</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/admin/planes_ctrl.php">Plan de Estudio</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/admin/profesores_ctrl.php">Docentes</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/admin/aulas_ctrl.php">Aulas</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/admin/alumnos_ctrl.php">Alumnos</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/admin/ciclos_ctrl.php">Ciclos</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/admin/usuarios_ctrl.php">Usuarios</a></li>
         <?php elseif ($rol === ROL_BEDEL): ?>
-            <li><a href="/controllers/bedel/comisiones_ctrl.php">Comisiones</a></li>
-            <li><a href="/controllers/bedel/inscripciones_ctrl.php">Inscripciones</a></li>
-            <li><a href="/controllers/bedel/asistencias_ctrl.php">Asistencias</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/bedel/comisiones_ctrl.php">Comisiones</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/bedel/inscripciones_ctrl.php">Inscripciones</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/bedel/asistencias_ctrl.php">Asistencias</a></li>
         <?php elseif ($rol === ROL_DOCENTE): ?>
-            <li><a href="/controllers/docente/comisiones_ctrl.php">Mis Comisiones</a></li>
-            <li><a href="/controllers/docente/calificaciones_ctrl.php">Calificaciones</a></li>
-            <li><a href="/controllers/docente/asistencias_ctrl.php">Asistencias</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/docente/comisiones_ctrl.php">Mis Comisiones</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/docente/calificaciones_ctrl.php">Calificaciones</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/docente/asistencias_ctrl.php">Asistencias</a></li>
         <?php elseif ($rol === ROL_ALUMNO): ?>
-            <li><a href="/controllers/alumno/cursadas_ctrl.php">Mis Cursadas</a></li>
-            <li><a href="/controllers/alumno/notas_ctrl.php">Mis Notas</a></li>
-            <li><a href="/controllers/alumno/asistencias_ctrl.php">Mis Asistencias</a></li>
-            <li><a href="/controllers/alumno/carrera_ctrl.php">Mi Carrera</a></li>
-            <li><a href="/controllers/alumno/titulo_ctrl.php">Mi Título</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/alumno/cursadas_ctrl.php">Mis Cursadas</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/alumno/notas_ctrl.php">Mis Notas</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/alumno/asistencias_ctrl.php">Mis Asistencias</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/alumno/carrera_ctrl.php">Mi Carrera</a></li>
+            <li><a href="<?= BASE_URL ?>/controllers/alumno/titulo_ctrl.php">Mi Título</a></li>
         <?php endif; ?>
     </ul>
     <div class="user-area">
         <span><?= $nombre ?> &mdash; <?= $nombre_rol ?></span>
-        <a href="/controllers/logout_ctrl.php">Salir</a>
+        <a href="<?= BASE_URL ?>/controllers/logout_ctrl.php">Salir</a>
     </div>
 </nav>
 <main>
