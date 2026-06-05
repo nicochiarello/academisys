@@ -6,7 +6,9 @@ class ComisionModel
 
     public function getActivas(): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM v_comisiones_activas ORDER BY nombre_materia');
+        $stmt = $this->pdo->query(
+            'SELECT * FROM v_comisiones_activas ORDER BY nombre_materia'
+        );
         return $stmt->fetchAll();
     }
 
@@ -16,7 +18,7 @@ class ComisionModel
             'SELECT co.*,
                     m.nombre AS nombre_materia,
                     p.nombre AS nombre_profesor, p.apellido AS apellido_profesor,
-                    a.nombre AS nombre_aula,
+                    a.numero AS numero_aula, a.edificio,
                     ca.anio, ca.cuatrimestre
              FROM Comision co
              JOIN Materia m ON m.id_materia = co.id_materia
@@ -29,31 +31,44 @@ class ComisionModel
         return $stmt->fetch();
     }
 
+    /* v_comisiones_activas no tiene id_profesor — query directa a Comision */
     public function getByProfesor(int $id_profesor): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT vc.*
-             FROM v_comisiones_activas vc
-             WHERE vc.id_profesor = :id_profesor'
+            'SELECT co.id_comision, m.nombre AS nombre_materia,
+                    a.numero AS aula, a.edificio, co.turno, co.cupo_maximo,
+                    ca.anio, ca.cuatrimestre,
+                    COUNT(i.id_inscripcion) AS inscriptos_activos
+             FROM Comision co
+             JOIN Materia m ON m.id_materia = co.id_materia
+             JOIN Aula a ON a.id_aula = co.id_aula
+             JOIN Ciclo_Academico ca ON ca.id_ciclo = co.id_ciclo
+             LEFT JOIN Inscripcion i
+                    ON i.id_comision = co.id_comision
+                   AND i.estado IN (\'activa\', \'aprobada\')
+             WHERE co.id_profesor = :id AND ca.activo = 1
+             GROUP BY co.id_comision, m.nombre, a.numero, a.edificio,
+                      co.turno, co.cupo_maximo, ca.anio, ca.cuatrimestre'
         );
-        $stmt->execute([':id_profesor' => $id_profesor]);
+        $stmt->execute([':id' => $id_profesor]);
         return $stmt->fetchAll();
     }
 
+    /* El FK en Inscripcion es id_alumno (referencia Alumno.legajo) */
     public function getInscriptos(int $id_comision): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT i.*, al.nombre, al.apellido, al.legajo
+            "SELECT i.*, al.nombre, al.apellido, al.legajo
              FROM Inscripcion i
-             JOIN Alumno al ON al.legajo = i.legajo
-             WHERE i.id_comision = :id AND i.estado IN (\'activa\', \'aprobada\')
-             ORDER BY al.apellido, al.nombre'
+             JOIN Alumno al ON al.legajo = i.id_alumno
+             WHERE i.id_comision = :id AND i.estado IN ('activa', 'aprobada')
+             ORDER BY al.apellido, al.nombre"
         );
         $stmt->execute([':id' => $id_comision]);
         return $stmt->fetchAll();
     }
 
-    /* Puede lanzar PDOException si el trigger T2 rechaza la inserción */
+    /* Puede lanzar PDOException si el trigger rechaza la inserción */
     public function crear(array $datos): bool
     {
         $stmt = $this->pdo->prepare(

@@ -10,7 +10,7 @@ class PlanModel
             'SELECT p.*, c.nombre AS nombre_carrera
              FROM Plan p
              JOIN Carrera c ON c.id_carrera = p.id_carrera
-             ORDER BY c.nombre, p.anio DESC'
+             ORDER BY c.nombre, p.`año_vigencia` DESC'
         );
         return $stmt->fetchAll();
     }
@@ -18,7 +18,7 @@ class PlanModel
     public function getByCarrera(int $id_carrera): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT * FROM Plan WHERE id_carrera = :id ORDER BY anio DESC'
+            'SELECT * FROM Plan WHERE id_carrera = :id ORDER BY `año_vigencia` DESC'
         );
         $stmt->execute([':id' => $id_carrera]);
         return $stmt->fetchAll();
@@ -39,12 +39,12 @@ class PlanModel
     public function crear(array $datos): bool
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO Plan (id_carrera, anio, descripcion)
+            'INSERT INTO Plan (id_carrera, `año_vigencia`, descripcion)
              VALUES (:id_carrera, :anio, :descripcion)'
         );
         return $stmt->execute([
             ':id_carrera'  => $datos['id_carrera'],
-            ':anio'        => $datos['anio'],
+            ':anio'        => $datos['año_vigencia'],
             ':descripcion' => $datos['descripcion'] ?? null,
         ]);
     }

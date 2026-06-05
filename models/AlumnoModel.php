@@ -30,18 +30,21 @@ class AlumnoModel
     public function crear(array $datos): bool
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO Alumno (legajo, nombre, apellido, dni, email, telefono, id_carrera, fecha_ingreso, activo)
-             VALUES (:legajo, :nombre, :apellido, :dni, :email, :telefono, :id_carrera, :fecha_ingreso, 1)'
+            'INSERT INTO Alumno (legajo, dni, apellido, nombre, email, telefono,
+                                 fecha_nacimiento, fecha_ingreso, id_carrera, activo)
+             VALUES (:legajo, :dni, :apellido, :nombre, :email, :telefono,
+                     :fecha_nacimiento, :fecha_ingreso, :id_carrera, 1)'
         );
         return $stmt->execute([
-            ':legajo'        => $datos['legajo'],
-            ':nombre'        => $datos['nombre'],
-            ':apellido'      => $datos['apellido'],
-            ':dni'           => $datos['dni'],
-            ':email'         => $datos['email'],
-            ':telefono'      => $datos['telefono'] ?? null,
-            ':id_carrera'    => $datos['id_carrera'],
-            ':fecha_ingreso' => $datos['fecha_ingreso'],
+            ':legajo'          => $datos['legajo'],
+            ':dni'             => $datos['dni'],
+            ':apellido'        => $datos['apellido'],
+            ':nombre'          => $datos['nombre'],
+            ':email'           => $datos['email'],
+            ':telefono'        => $datos['telefono']         ?? null,
+            ':fecha_nacimiento'=> $datos['fecha_nacimiento'] ?? null,
+            ':fecha_ingreso'   => $datos['fecha_ingreso']    ?? null,
+            ':id_carrera'      => $datos['id_carrera'],
         ]);
     }
 
@@ -49,18 +52,23 @@ class AlumnoModel
     {
         $stmt = $this->pdo->prepare(
             'UPDATE Alumno
-             SET nombre = :nombre, apellido = :apellido, dni = :dni,
-                 email = :email, telefono = :telefono, id_carrera = :id_carrera
+             SET dni = :dni, apellido = :apellido, nombre = :nombre,
+                 email = :email, telefono = :telefono,
+                 fecha_nacimiento = :fecha_nacimiento,
+                 fecha_ingreso = :fecha_ingreso,
+                 id_carrera = :id_carrera
              WHERE legajo = :legajo'
         );
         return $stmt->execute([
-            ':legajo'     => $legajo,
-            ':nombre'     => $datos['nombre'],
-            ':apellido'   => $datos['apellido'],
-            ':dni'        => $datos['dni'],
-            ':email'      => $datos['email'],
-            ':telefono'   => $datos['telefono'] ?? null,
-            ':id_carrera' => $datos['id_carrera'],
+            ':legajo'          => $legajo,
+            ':dni'             => $datos['dni'],
+            ':apellido'        => $datos['apellido'],
+            ':nombre'          => $datos['nombre'],
+            ':email'           => $datos['email'],
+            ':telefono'        => $datos['telefono']         ?? null,
+            ':fecha_nacimiento'=> $datos['fecha_nacimiento'] ?? null,
+            ':fecha_ingreso'   => $datos['fecha_ingreso']    ?? null,
+            ':id_carrera'      => $datos['id_carrera'],
         ]);
     }
 

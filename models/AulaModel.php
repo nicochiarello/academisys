@@ -6,7 +6,9 @@ class AulaModel
 
     public function getAll(): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM Aula ORDER BY nombre');
+        $stmt = $this->pdo->query(
+            'SELECT * FROM Aula ORDER BY edificio, numero'
+        );
         return $stmt->fetchAll();
     }
 
@@ -20,27 +22,31 @@ class AulaModel
     public function crear(array $datos): bool
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO Aula (nombre, capacidad, tipo)
-             VALUES (:nombre, :capacidad, :tipo)'
+            'INSERT INTO Aula (numero, edificio, capacidad, equipamiento)
+             VALUES (:numero, :edificio, :capacidad, :equipamiento)'
         );
         return $stmt->execute([
-            ':nombre'    => $datos['nombre'],
-            ':capacidad' => $datos['capacidad'],
-            ':tipo'      => $datos['tipo'] ?? null,
+            ':numero'       => $datos['numero'],
+            ':edificio'     => $datos['edificio']     ?? null,
+            ':capacidad'    => $datos['capacidad']    ?? null,
+            ':equipamiento' => $datos['equipamiento'] ?? null,
         ]);
     }
 
     public function actualizar(int $id, array $datos): bool
     {
         $stmt = $this->pdo->prepare(
-            'UPDATE Aula SET nombre = :nombre, capacidad = :capacidad, tipo = :tipo
+            'UPDATE Aula
+             SET numero = :numero, edificio = :edificio,
+                 capacidad = :capacidad, equipamiento = :equipamiento
              WHERE id_aula = :id'
         );
         return $stmt->execute([
-            ':id'        => $id,
-            ':nombre'    => $datos['nombre'],
-            ':capacidad' => $datos['capacidad'],
-            ':tipo'      => $datos['tipo'] ?? null,
+            ':id'           => $id,
+            ':numero'       => $datos['numero'],
+            ':edificio'     => $datos['edificio']     ?? null,
+            ':capacidad'    => $datos['capacidad']    ?? null,
+            ':equipamiento' => $datos['equipamiento'] ?? null,
         ]);
     }
 }
