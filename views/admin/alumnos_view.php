@@ -1,4 +1,12 @@
-<?php require_once __DIR__ . '/_style.php'; ?>
+<?php
+require_once __DIR__ . '/_style.php';
+$mensaje  ??= null;
+$es_error ??= false;
+$alumnos  ??= [];
+$carreras ??= [];
+$planes   ??= [];
+$editando ??= null;
+?>
 
 <div class="sec-header">
     <h1>Alumnos</h1>
@@ -90,7 +98,7 @@
             </tr>
         </thead>
         <tbody>
-        <?php foreach ($alumnos as $a): ?>
+        <?php foreach ($alumnos as $idx => $a): ?>
             <tr>
                 <td><?= htmlspecialchars($a['legajo'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td><?= htmlspecialchars($a['apellido'], ENT_QUOTES, 'UTF-8') ?></td>
@@ -115,6 +123,41 @@
                         <button type="submit" class="btn btn-danger btn-sm">Baja</button>
                     </form>
                     <?php endif; ?>
+                    <button type="button" class="btn btn-success btn-sm"
+                            onclick="toggleTitulo(<?= $idx ?>)"
+                            style="margin-left:2px">🎓 Título</button>
+                </td>
+            </tr>
+            <!-- Fila colapsable para otorgar título -->
+            <tr id="titulo-row-<?= $idx ?>" style="display:none;background:#f9fbe7">
+                <td colspan="8" style="padding:14px 20px">
+                    <form method="POST" action="<?= BASE_URL ?>/controllers/admin/alumnos_ctrl.php"
+                          style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                        <input type="hidden" name="action" value="otorgar_titulo">
+                        <input type="hidden" name="legajo" value="<?= htmlspecialchars($a['legajo'], ENT_QUOTES, 'UTF-8') ?>">
+                        <div class="form-group" style="margin-bottom:0;min-width:280px">
+                            <label style="color:#33691e">Plan de estudio *</label>
+                            <select name="id_plan" required>
+                                <option value="">— Seleccionar plan —</option>
+                                <?php foreach ($planes as $plan): ?>
+                                    <option value="<?= (int) $plan['id_plan'] ?>">
+                                        <?= htmlspecialchars(
+                                            $plan['nombre_carrera'] . ' — ' . (int)$plan['año_vigencia'],
+                                            ENT_QUOTES, 'UTF-8'
+                                        ) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <button type="submit" class="btn btn-success btn-sm"
+                                    onclick="return confirm('¿Otorgar título a <?= htmlspecialchars($a['apellido'] . ', ' . $a['nombre'], ENT_QUOTES, 'UTF-8') ?>?')">
+                                Otorgar Título
+                            </button>
+                            <button type="button" class="btn btn-warn btn-sm"
+                                    onclick="toggleTitulo(<?= $idx ?>)">Cancelar</button>
+                        </div>
+                    </form>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -124,5 +167,12 @@
         </tbody>
     </table>
 </div>
+
+<script>
+function toggleTitulo(idx) {
+    var row = document.getElementById('titulo-row-' + idx);
+    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+</script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

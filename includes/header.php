@@ -8,6 +8,10 @@ requireLogin();
 $rol        = $_SESSION['id_rol'] ?? 0;
 $nombre     = htmlspecialchars($_SESSION['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
 $nombre_rol = htmlspecialchars($_SESSION['nombre_rol'] ?? '', ENT_QUOTES, 'UTF-8');
+
+/* Garantizar que las variables de alerta estén siempre definidas en el scope de la vista */
+$mensaje  ??= null;
+$es_error ??= false;
 ?>
 <!DOCTYPE html>
 <html lang="es">
