@@ -110,61 +110,68 @@ $es_error                  ??= false;
 <?php else: ?>
 <?php foreach ($inscripciones_por_carrera as $carrera => $materias): ?>
 
-<div style="margin-bottom:28px">
-    <div style="background:#1a237e;color:#fff;padding:10px 16px;border-radius:8px 8px 0 0;font-weight:700;font-size:.95rem;letter-spacing:.3px">
-        <?= htmlspecialchars($carrera, ENT_QUOTES, 'UTF-8') ?>
+<div class="tabla-wrap" style="margin-bottom:28px">
+    <!-- Cabecera de carrera -->
+    <div style="background:#1a237e;color:#fff;padding:11px 16px;font-weight:700;font-size:.92rem;letter-spacing:.3px;display:flex;justify-content:space-between;align-items:center">
+        <span><?= htmlspecialchars($carrera, ENT_QUOTES, 'UTF-8') ?></span>
+        <span style="font-size:.78rem;font-weight:400;color:#9fa8da">
+            <?= array_sum(array_map('count', $materias)) ?> inscriptos · <?= count($materias) ?> materia<?= count($materias) !== 1 ? 's' : '' ?>
+        </span>
     </div>
 
-    <?php foreach ($materias as $materia => $inscripciones): ?>
-    <div style="border:1px solid #e0e0e0;border-top:none;<?= next($materias) === false ? 'border-radius:0 0 8px 8px' : '' ?>">
-        <div style="background:#e8eaf6;padding:7px 16px;font-size:.85rem;font-weight:600;color:#283593;border-bottom:1px solid #e0e0e0">
-            <?= htmlspecialchars($materia, ENT_QUOTES, 'UTF-8') ?>
-            <span style="font-weight:400;color:#7986cb;margin-left:8px">(<?= count($inscripciones) ?> inscripto<?= count($inscripciones) !== 1 ? 's' : '' ?>)</span>
-        </div>
-        <table class="tabla" style="margin:0;border-radius:0;box-shadow:none">
-            <thead>
-                <tr>
-                    <th>Legajo</th><th>Alumno</th><th>Estado</th><th>Fecha</th><th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
+    <!-- Una sola tabla por carrera, materias como filas separadoras -->
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Legajo</th><th>Alumno</th><th>Estado</th><th>Fecha inscripción</th><th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($materias as $materia => $inscripciones): ?>
+            <tr style="background:#e8eaf6">
+                <td colspan="5" style="padding:7px 14px;font-size:.82rem;font-weight:700;color:#283593;border-bottom:1px solid #c5cae9;border-top:2px solid #c5cae9">
+                    <?= htmlspecialchars($materia, ENT_QUOTES, 'UTF-8') ?>
+                    <span style="font-weight:400;color:#7986cb;margin-left:8px">
+                        — <?= count($inscripciones) ?> inscripto<?= count($inscripciones) !== 1 ? 's' : '' ?>
+                    </span>
+                </td>
+            </tr>
             <?php foreach ($inscripciones as $i): ?>
-                <tr>
-                    <td><?= htmlspecialchars($i['id_alumno'], ENT_QUOTES, 'UTF-8') ?></td>
-                    <td><?= htmlspecialchars($i['apellido'] . ', ' . $i['nombre'], ENT_QUOTES, 'UTF-8') ?></td>
-                    <td>
-                        <?php $badge_class = match($i['estado']) {
-                            'activa'      => 'badge-act',
-                            'aprobada'    => 'badge-ok',
-                            'baja'        => 'badge-off',
-                            'desaprobada' => 'badge-warn',
-                            default       => ''
-                        }; ?>
-                        <span class="badge <?= $badge_class ?>">
-                            <?= htmlspecialchars(ucfirst($i['estado']), ENT_QUOTES, 'UTF-8') ?>
-                        </span>
-                    </td>
-                    <td><?= htmlspecialchars($i['fecha_inscripcion'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
-                    <td>
-                        <?php if ($i['estado'] === 'activa'): ?>
-                        <form method="POST" action="<?= BASE_URL ?>/controllers/bedel/inscripciones_ctrl.php"
-                              style="display:inline"
-                              data-nombre="<?= htmlspecialchars($i['apellido'] . ', ' . $i['nombre'], ENT_QUOTES, 'UTF-8') ?>"
-                              onsubmit="return confirm('¿Dar de baja la inscripción de ' + this.dataset.nombre + '?')">
-                            <input type="hidden" name="action" value="baja">
-                            <input type="hidden" name="id_inscripcion" value="<?= (int) $i['id_inscripcion'] ?>">
-                            <button type="submit" class="btn btn-danger btn-sm">Baja</button>
-                        </form>
-                        <?php else: ?>
-                            <span style="color:#ccc;font-size:.75rem">—</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
+            <tr>
+                <td style="font-family:monospace;font-size:.82rem"><?= htmlspecialchars($i['id_alumno'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td><?= htmlspecialchars($i['apellido'] . ', ' . $i['nombre'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td>
+                    <?php $badge_class = match($i['estado']) {
+                        'activa'      => 'badge-act',
+                        'aprobada'    => 'badge-ok',
+                        'baja'        => 'badge-off',
+                        'desaprobada' => 'badge-warn',
+                        default       => ''
+                    }; ?>
+                    <span class="badge <?= $badge_class ?>">
+                        <?= htmlspecialchars(ucfirst($i['estado']), ENT_QUOTES, 'UTF-8') ?>
+                    </span>
+                </td>
+                <td style="color:#78909c;font-size:.82rem"><?= htmlspecialchars($i['fecha_inscripcion'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
+                <td>
+                    <?php if ($i['estado'] === 'activa'): ?>
+                    <form method="POST" action="<?= BASE_URL ?>/controllers/bedel/inscripciones_ctrl.php"
+                          style="display:inline"
+                          data-nombre="<?= htmlspecialchars($i['apellido'] . ', ' . $i['nombre'], ENT_QUOTES, 'UTF-8') ?>"
+                          onsubmit="return confirm('¿Dar de baja la inscripción de ' + this.dataset.nombre + '?')">
+                        <input type="hidden" name="action" value="baja">
+                        <input type="hidden" name="id_inscripcion" value="<?= (int) $i['id_inscripcion'] ?>">
+                        <button type="submit" class="btn btn-danger btn-sm">Baja</button>
+                    </form>
+                    <?php else: ?>
+                        <span style="color:#ccc;font-size:.75rem">—</span>
+                    <?php endif; ?>
+                </td>
+            </tr>
             <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-    <?php endforeach; ?>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>
 
 <?php endforeach; ?>
