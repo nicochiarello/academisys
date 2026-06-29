@@ -49,6 +49,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $comisiones = $modelComision->getActivas();
 
+/* Búsqueda de alumnos para autocompletar el formulario de inscripción */
+$q_alumno           = trim($_GET['q'] ?? '');
+$alumnos_encontrados = [];
+if ($q_alumno !== '') {
+    $like = "%$q_alumno%";
+    $stmt = $pdo->prepare(
+        'SELECT a.legajo, a.dni, a.apellido, a.nombre, a.email, c.nombre AS nombre_carrera
+         FROM Alumno a
+         JOIN Carrera c ON c.id_carrera = a.id_carrera
+         WHERE a.activo = 1
+           AND (a.legajo   LIKE ?
+             OR a.dni      LIKE ?
+             OR a.apellido LIKE ?
+             OR a.nombre   LIKE ?
+             OR a.email    LIKE ?)
+         ORDER BY a.apellido, a.nombre
+         LIMIT 10'
+    );
+    $stmt->execute(array_fill(0, 5, $like));
+    $alumnos_encontrados = $stmt->fetchAll();
+}
+
 /* Últimas 20 inscripciones del ciclo activo — query directa */
 $stmt = $pdo->query(
     'SELECT i.id_inscripcion, i.id_alumno, a.apellido, a.nombre,
