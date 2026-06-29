@@ -6,6 +6,8 @@ $alumnos  ??= [];
 $carreras ??= [];
 $planes   ??= [];
 $editando ??= null;
+$password_temporal ??= null;
+$email_alumno_nuevo ??= null;
 ?>
 
 <div class="sec-header">
@@ -16,6 +18,14 @@ $editando ??= null;
 <?php if ($mensaje): ?>
     <div class="alert <?= $es_error ? 'alert-err' : 'alert-ok' ?>">
         <?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($password_temporal): ?>
+    <div class="alert alert-ok">
+        Usuario generado para <strong><?= htmlspecialchars($email_alumno_nuevo ?? '', ENT_QUOTES, 'UTF-8') ?></strong> —
+        contraseña temporal: <code style="font-size:1rem"><?= htmlspecialchars($password_temporal, ENT_QUOTES, 'UTF-8') ?></code>
+        <br><small>Comunicásela al alumno. Deberá cambiarla en su primer ingreso. No se mostrará de nuevo.</small>
     </div>
 <?php endif; ?>
 

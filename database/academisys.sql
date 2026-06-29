@@ -238,6 +238,7 @@ CREATE TABLE Usuario (
   legajo_alumno  VARCHAR(20)  NULL DEFAULT NULL,
   id_profesor    INT          NULL DEFAULT NULL,
   activo         TINYINT(1)   NOT NULL DEFAULT 1,
+  debe_cambiar_password TINYINT(1) NOT NULL DEFAULT 0,
   created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id_usuario),
   UNIQUE KEY uq_usuario_email (email),

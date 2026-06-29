@@ -19,8 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         switch ($action) {
             case 'crear':
-                $modelo->crear($_POST);
-                $msg = urlencode('Alumno creado correctamente.');
+                $passwordTemporal = $modelo->crear($_POST);
+                $_SESSION['flash_password_temporal'] = $passwordTemporal;
+                $_SESSION['flash_email_alumno']      = $_POST['email'];
+                $msg = urlencode('Alumno creado correctamente. Se generó un usuario de acceso.');
                 break;
             case 'editar':
                 $modelo->actualizar($_POST['legajo'], $_POST);
@@ -55,6 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $mensaje  = $_GET['msg'] ?? ($_GET['err'] ?? null);
 $es_error = isset($_GET['err']);
+
+$password_temporal = $_SESSION['flash_password_temporal'] ?? null;
+$email_alumno_nuevo = $_SESSION['flash_email_alumno'] ?? null;
+unset($_SESSION['flash_password_temporal'], $_SESSION['flash_email_alumno']);
 
 try {
     $alumnos  = $modelo->getAll();

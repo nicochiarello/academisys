@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['nombre']        = $usuario['nombre'] ?? $usuario['email'];
             $_SESSION['legajo_alumno'] = $usuario['legajo_alumno'] ?? null;
             $_SESSION['id_profesor']   = $usuario['id_profesor']   ?? null;
+            $_SESSION['debe_cambiar_password'] = (bool) ($usuario['debe_cambiar_password'] ?? false);
 
             header('Location: ' . BASE_URL . '/controllers/dashboard_ctrl.php');
             exit;

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../includes/auth.php';
+
 class AlumnoModel
 {
     public function __construct(private PDO $pdo) {}
@@ -27,25 +29,58 @@ class AlumnoModel
         return $stmt->fetch();
     }
 
-    public function crear(array $datos): bool
+    /**
+     * Crea el alumno y, en la misma transacción, su Usuario de acceso
+     * (contraseña temporal que deberá cambiar en el primer login).
+     * Devuelve la contraseña temporal en texto plano para mostrársela al admin una sola vez.
+     */
+    public function crear(array $datos): string
     {
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO Alumno (legajo, dni, apellido, nombre, email, telefono,
-                                 fecha_nacimiento, fecha_ingreso, id_carrera, activo)
-             VALUES (:legajo, :dni, :apellido, :nombre, :email, :telefono,
-                     :fecha_nacimiento, :fecha_ingreso, :id_carrera, 1)'
-        );
-        return $stmt->execute([
-            ':legajo'          => $datos['legajo'],
-            ':dni'             => $datos['dni'],
-            ':apellido'        => $datos['apellido'],
-            ':nombre'          => $datos['nombre'],
-            ':email'           => $datos['email'],
-            ':telefono'        => $datos['telefono']         ?? null,
-            ':fecha_nacimiento'=> $datos['fecha_nacimiento'] ?? null,
-            ':fecha_ingreso'   => $datos['fecha_ingreso']    ?? null,
-            ':id_carrera'      => $datos['id_carrera'],
-        ]);
+        $passwordTemporal = $this->generarPasswordTemporal();
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO Alumno (legajo, dni, apellido, nombre, email, telefono,
+                                     fecha_nacimiento, fecha_ingreso, id_carrera, activo)
+                 VALUES (:legajo, :dni, :apellido, :nombre, :email, :telefono,
+                         :fecha_nacimiento, :fecha_ingreso, :id_carrera, 1)'
+            );
+            $stmt->execute([
+                ':legajo'          => $datos['legajo'],
+                ':dni'             => $datos['dni'],
+                ':apellido'        => $datos['apellido'],
+                ':nombre'          => $datos['nombre'],
+                ':email'           => $datos['email'],
+                ':telefono'        => $datos['telefono']         ?? null,
+                ':fecha_nacimiento'=> $datos['fecha_nacimiento'] ?? null,
+                ':fecha_ingreso'   => $datos['fecha_ingreso']    ?? null,
+                ':id_carrera'      => $datos['id_carrera'],
+            ]);
+
+            $stmtUsr = $this->pdo->prepare(
+                'INSERT INTO Usuario (email, password_hash, id_rol, legajo_alumno, activo, debe_cambiar_password)
+                 VALUES (:email, :password_hash, :id_rol, :legajo_alumno, 1, 1)'
+            );
+            $stmtUsr->execute([
+                ':email'         => $datos['email'],
+                ':password_hash' => password_hash($passwordTemporal, PASSWORD_DEFAULT),
+                ':id_rol'        => ROL_ALUMNO,
+                ':legajo_alumno' => $datos['legajo'],
+            ]);
+
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+
+        return $passwordTemporal;
+    }
+
+    private function generarPasswordTemporal(): string
+    {
+        return bin2hex(random_bytes(5));
     }
 
     public function actualizar(string $legajo, array $datos): bool

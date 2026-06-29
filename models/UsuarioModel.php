@@ -58,4 +58,17 @@ class UsuarioModel
         $stmt = $this->pdo->prepare('UPDATE Usuario SET activo = 0 WHERE id_usuario = :id');
         return $stmt->execute([':id' => $id]);
     }
+
+    public function cambiarPassword(int $id_usuario, string $nuevaPassword): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE Usuario
+             SET password_hash = :password_hash, debe_cambiar_password = 0
+             WHERE id_usuario = :id'
+        );
+        return $stmt->execute([
+            ':password_hash' => password_hash($nuevaPassword, PASSWORD_DEFAULT),
+            ':id'            => $id_usuario,
+        ]);
+    }
 }

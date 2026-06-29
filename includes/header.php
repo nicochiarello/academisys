@@ -5,6 +5,12 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/auth.php';
 requireLogin();
 
+if (!empty($_SESSION['debe_cambiar_password'])
+    && basename($_SERVER['SCRIPT_NAME']) !== 'cambiar_password_ctrl.php') {
+    header('Location: ' . BASE_URL . '/controllers/cambiar_password_ctrl.php');
+    exit;
+}
+
 $rol        = $_SESSION['id_rol'] ?? 0;
 $nombre     = htmlspecialchars($_SESSION['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
 $nombre_rol = htmlspecialchars($_SESSION['nombre_rol'] ?? '', ENT_QUOTES, 'UTF-8');
