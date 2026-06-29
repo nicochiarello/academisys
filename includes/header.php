@@ -100,6 +100,7 @@ $es_error ??= false;
             <li><?= $a('asistencias_ctrl.php','/controllers/alumno/asistencias_ctrl.php','Mis Asistencias') ?></li>
             <li><?= $a('carrera_ctrl.php',   '/controllers/alumno/carrera_ctrl.php',   'Mi Carrera') ?></li>
             <li><?= $a('titulo_ctrl.php',    '/controllers/alumno/titulo_ctrl.php',    'Mi Título') ?></li>
+            <li><?= $a('perfil_ctrl.php',    '/controllers/perfil_ctrl.php',           'Mi Perfil') ?></li>
         <?php endif; ?>
     </ul>
     <div class="user-area">
