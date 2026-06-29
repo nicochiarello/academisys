@@ -13,12 +13,13 @@ $modelAlum = new AlumnoModel($pdo);
 
 $rol = (int) $_SESSION['id_rol'];
 
-$usuario = null;
-$alumno  = null;
+$usuario         = null;
+$alumno          = null;
+$estado_academico = null;
 
-if ($rol === ROL_ADMIN) {
+if (in_array($rol, [ROL_ADMIN, ROL_BEDEL])) {
     if (!empty($_GET['legajo'])) {
-        $alumno  = $modelAlum->getByLegajo(trim($_GET['legajo']));
+        $alumno = $modelAlum->getByLegajo(trim($_GET['legajo']));
         if ($alumno) {
             $stmt = $pdo->prepare(
                 'SELECT u.*, r.nombre AS nombre_rol FROM Usuario u
@@ -38,6 +39,49 @@ if ($rol === ROL_ADMIN) {
     if (!$alumno && !$usuario) {
         header('Location: ' . BASE_URL . '/controllers/admin/usuarios_ctrl.php');
         exit;
+    }
+
+    if ($alumno) {
+        $legajo = $alumno['legajo'];
+
+        $stmt = $pdo->prepare(
+            'SELECT * FROM v_estado_plan_carrera
+             WHERE legajo = :legajo
+             ORDER BY año_cursada, cuatrimestre'
+        );
+        $stmt->execute([':legajo' => $legajo]);
+        $materias = $stmt->fetchAll();
+
+        $total        = count($materias);
+        $aprobadas    = count(array_filter($materias, fn($m) => strtolower($m['estado']) === 'aprobada'));
+        $en_curso     = count(array_filter($materias, fn($m) => strtolower($m['estado']) === 'en_curso'));
+        $desaprobadas = count(array_filter($materias, fn($m) => strtolower($m['estado']) === 'desaprobada'));
+
+        $stmt2 = $pdo->prepare(
+            'SELECT ROUND(promedio_final, 2) FROM v_promedio_por_alumno WHERE legajo = :legajo'
+        );
+        $stmt2->execute([':legajo' => $legajo]);
+        $promedio = $stmt2->fetchColumn();
+
+        $stmt3 = $pdo->prepare(
+            'SELECT ROUND(AVG(v.porcentaje_asistencia), 1)
+             FROM v_asistencia_por_inscripcion v
+             JOIN Inscripcion i ON i.id_inscripcion = v.id_inscripcion
+             WHERE i.id_alumno = :legajo AND i.estado = :estado'
+        );
+        $stmt3->execute([':legajo' => $legajo, ':estado' => 'activa']);
+        $pct_asistencia = $stmt3->fetchColumn();
+
+        $estado_academico = [
+            'total'          => $total,
+            'aprobadas'      => $aprobadas,
+            'en_curso'       => $en_curso,
+            'desaprobadas'   => $desaprobadas,
+            'pendientes'     => $total - $aprobadas - $en_curso - $desaprobadas,
+            'pct_carrera'    => $total > 0 ? round($aprobadas * 100 / $total) : 0,
+            'promedio'       => $promedio !== false ? $promedio : null,
+            'pct_asistencia' => $pct_asistencia !== false ? $pct_asistencia : null,
+        ];
     }
 } elseif ($rol === ROL_ALUMNO) {
     $legajo = $_SESSION['legajo_alumno'] ?? '';
