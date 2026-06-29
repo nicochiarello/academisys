@@ -52,7 +52,7 @@ $es_error            ??= false;
                 <td style="font-size:.8rem"><?= htmlspecialchars($al['nombre_carrera'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td>
                     <button type="button" class="btn btn-primary btn-sm"
-                            onclick="seleccionarAlumno(<?= json_encode($al['legajo']) ?>, <?= json_encode($al['apellido'] . ', ' . $al['nombre']) ?>)">
+                            onclick="seleccionarAlumno(<?= json_encode($al['legajo'], JSON_HEX_QUOT) ?>, <?= json_encode($al['apellido'] . ', ' . $al['nombre'], JSON_HEX_QUOT) ?>)">
                         Seleccionar
                     </button>
                 </td>
