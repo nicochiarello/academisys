@@ -144,7 +144,7 @@
             <button type="submit">Ingresar</button>
         </form>
 
-        <p class="footer-text">AcademiSys &copy; 2025 &mdash; Universidad Champagnat</p>
+        <p class="footer-text">AcademiSys &copy; 6 &mdash; Universidad Champagnat</p>
     </div>
 </body>
 </html>
