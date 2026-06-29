@@ -55,15 +55,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+const POR_PAGINA_ALUMNOS = 20;
+
 $mensaje  = $_GET['msg'] ?? ($_GET['err'] ?? null);
 $es_error = isset($_GET['err']);
 
-$password_temporal = $_SESSION['flash_password_temporal'] ?? null;
-$email_alumno_nuevo = $_SESSION['flash_email_alumno'] ?? null;
+$password_temporal  = $_SESSION['flash_password_temporal'] ?? null;
+$email_alumno_nuevo = $_SESSION['flash_email_alumno']      ?? null;
 unset($_SESSION['flash_password_temporal'], $_SESSION['flash_email_alumno']);
 
+$q       = trim($_GET['q'] ?? '');
+$pagina  = max(1, (int) ($_GET['page'] ?? 1));
+$total   = $modelo->contar($q);
+$paginas = max(1, (int) ceil($total / POR_PAGINA_ALUMNOS));
+$pagina  = min($pagina, $paginas);
+$offset  = ($pagina - 1) * POR_PAGINA_ALUMNOS;
+
 try {
-    $alumnos  = $modelo->getAll();
+    $alumnos  = $modelo->buscar($q, POR_PAGINA_ALUMNOS, $offset);
     $carreras = $modelCar->getAll();
     $planes   = $modelPlan->getAll();
     $editando = null;

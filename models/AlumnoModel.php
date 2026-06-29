@@ -17,6 +17,43 @@ class AlumnoModel
         return $stmt->fetchAll();
     }
 
+    private function whereParams(string $q): array
+    {
+        if ($q === '') return ['', []];
+        $like  = "%$q%";
+        $where = 'WHERE (a.legajo   LIKE ?
+                      OR a.dni      LIKE ?
+                      OR a.apellido LIKE ?
+                      OR a.nombre   LIKE ?
+                      OR a.email    LIKE ?)';
+        return [$where, array_fill(0, 5, $like)];
+    }
+
+    public function buscar(string $q, int $limit, int $offset): array
+    {
+        [$where, $params] = $this->whereParams($q);
+        $stmt = $this->pdo->prepare(
+            "SELECT a.*, c.nombre AS nombre_carrera
+             FROM Alumno a
+             JOIN Carrera c ON c.id_carrera = a.id_carrera
+             $where
+             ORDER BY a.apellido, a.nombre
+             LIMIT ? OFFSET ?"
+        );
+        $stmt->execute([...$params, $limit, $offset]);
+        return $stmt->fetchAll();
+    }
+
+    public function contar(string $q): int
+    {
+        [$where, $params] = $this->whereParams($q);
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM Alumno a $where"
+        );
+        $stmt->execute($params);
+        return (int) $stmt->fetchColumn();
+    }
+
     public function getByLegajo(string $legajo): array|false
     {
         $stmt = $this->pdo->prepare(
