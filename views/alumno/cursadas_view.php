@@ -18,7 +18,7 @@
         <tbody>
         <?php foreach ($cursadas as $c): ?>
             <?php
-            $estado = $c['estado'] ?? '';
+            $estado = $c['estado_inscripcion'] ?? '';
             $badge  = match($estado) {
                 'aprobada'    => 'badge-ok',
                 'activa'      => 'badge-act',

@@ -25,7 +25,7 @@ ksort($materias_por_anio);
 
 /* Totales para barra de progreso */
 $total_materias    = count($raw);
-$total_aprobadas   = count(array_filter($raw, fn($m) => $m['estado'] === 'aprobada'));
+$total_aprobadas   = count(array_filter($raw, fn($m) => strtolower($m['estado']) === 'aprobada'));
 
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../views/alumno/carrera_view.php';

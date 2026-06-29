@@ -36,10 +36,10 @@ if (!$titulo) {
     $plan = $stmt2->fetchAll();
 
     $total_materias  = count($plan);
-    $total_aprobadas = count(array_filter($plan, fn($m) => $m['estado'] === 'aprobada'));
+    $total_aprobadas = count(array_filter($plan, fn($m) => strtolower($m['estado']) === 'aprobada'));
     $materias_pendientes = array_filter(
         $plan,
-        fn($m) => in_array($m['estado'], ['pendiente', 'desaprobada'])
+        fn($m) => in_array(strtolower($m['estado']), ['pendiente', 'desaprobada'])
     );
 }
 

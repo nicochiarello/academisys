@@ -37,7 +37,7 @@ $color_prog = $pct_prog >= 75 ? '#2e7d32' : ($pct_prog >= 40 ? '#f57c00' : '#1a2
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
     <?php foreach ($materias as $m): ?>
         <?php
-        $estado_m = $m['estado'] ?? 'pendiente';
+        $estado_m = strtolower(str_replace(' ', '_', $m['estado'] ?? 'pendiente'));
         [$icono_m, $bg_m, $borde_m, $texto_m] = match($estado_m) {
             'aprobada'    => ['✅', '#e8f5e9', '#a5d6a7', '#2e7d32'],
             'en_curso'    => ['🔄', '#e3f2fd', '#90caf9', '#0d47a1'],
