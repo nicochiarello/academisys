@@ -32,6 +32,54 @@ class UsuarioModel
         return $stmt->fetchAll();
     }
 
+    private function whereClause(string $q): string
+    {
+        if ($q === '') return '';
+        return "WHERE (u.email        LIKE :q
+                    OR u.legajo_alumno LIKE :q
+                    OR al.dni          LIKE :q
+                    OR al.nombre       LIKE :q
+                    OR al.apellido     LIKE :q
+                    OR p.nombre        LIKE :q
+                    OR p.apellido      LIKE :q)";
+    }
+
+    public function buscar(string $q, int $limit, int $offset): array
+    {
+        $where = $this->whereClause($q);
+        $stmt  = $this->pdo->prepare(
+            "SELECT u.*, r.nombre AS nombre_rol,
+                    CONCAT(al.apellido, ', ', al.nombre) AS nombre_alumno,
+                    CONCAT(p.apellido,  ', ', p.nombre)  AS nombre_profesor
+             FROM Usuario u
+             JOIN Rol r ON r.id_rol = u.id_rol
+             LEFT JOIN Alumno  al ON al.legajo      = u.legajo_alumno
+             LEFT JOIN Profesor p ON p.id_profesor  = u.id_profesor
+             $where
+             ORDER BY u.email
+             LIMIT :limit OFFSET :offset"
+        );
+        if ($q !== '') $stmt->bindValue(':q', "%$q%");
+        $stmt->bindValue(':limit',  $limit,  PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function contar(string $q): int
+    {
+        $where = $this->whereClause($q);
+        $stmt  = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM Usuario u
+             LEFT JOIN Alumno  al ON al.legajo     = u.legajo_alumno
+             LEFT JOIN Profesor p ON p.id_profesor = u.id_profesor
+             $where"
+        );
+        if ($q !== '') $stmt->bindValue(':q', "%$q%");
+        $stmt->execute();
+        return (int) $stmt->fetchColumn();
+    }
+
     public function crear(array $datos): bool
     {
         $stmt = $this->pdo->prepare(

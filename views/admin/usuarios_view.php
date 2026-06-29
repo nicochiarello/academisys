@@ -1,4 +1,16 @@
 <?php require_once __DIR__ . '/_style.php'; ?>
+<?php
+$q       ??= '';
+$pagina  ??= 1;
+$paginas ??= 1;
+$total   ??= 0;
+
+function urlPaginaUsuarios(int $p, string $q): string {
+    $params = ['page' => $p];
+    if ($q !== '') $params['q'] = $q;
+    return BASE_URL . '/controllers/admin/usuarios_ctrl.php?' . http_build_query($params);
+}
+?>
 
 <div class="sec-header">
     <h1>Usuarios del Sistema</h1>
@@ -67,6 +79,18 @@
 </div>
 <?php endif; ?>
 
+<!-- Barra de búsqueda -->
+<form method="GET" action="<?= BASE_URL ?>/controllers/admin/usuarios_ctrl.php"
+      style="display:flex;gap:8px;margin-bottom:16px">
+    <input type="text" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>"
+           placeholder="Buscar por nombre, DNI o legajo…"
+           style="flex:1;padding:9px 12px;border:1.5px solid #cfd8dc;border-radius:6px;font-size:.9rem">
+    <button type="submit" class="btn btn-primary">Buscar</button>
+    <?php if ($q !== ''): ?>
+        <a href="<?= BASE_URL ?>/controllers/admin/usuarios_ctrl.php" class="btn btn-warn">Limpiar</a>
+    <?php endif; ?>
+</form>
+
 <div class="tabla-wrap">
     <table class="tabla">
         <thead>
@@ -121,5 +145,32 @@
         </tbody>
     </table>
 </div>
+
+<!-- Paginación -->
+<?php if ($paginas > 1): ?>
+<div style="display:flex;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap">
+    <?php if ($pagina > 1): ?>
+        <a href="<?= urlPaginaUsuarios($pagina - 1, $q) ?>" class="btn btn-primary btn-sm">&laquo; Anterior</a>
+    <?php endif; ?>
+
+    <?php for ($p = 1; $p <= $paginas; $p++): ?>
+        <?php if ($p === $pagina): ?>
+            <span style="padding:4px 10px;background:#1a237e;color:#fff;border-radius:5px;font-size:.82rem;font-weight:700"><?= $p ?></span>
+        <?php elseif (abs($p - $pagina) <= 2 || $p === 1 || $p === $paginas): ?>
+            <a href="<?= urlPaginaUsuarios($p, $q) ?>" class="btn btn-primary btn-sm" style="background:#e8eaf6;color:#1a237e"><?= $p ?></a>
+        <?php elseif (abs($p - $pagina) === 3): ?>
+            <span style="color:#90a4ae;font-size:.82rem">…</span>
+        <?php endif; ?>
+    <?php endfor; ?>
+
+    <?php if ($pagina < $paginas): ?>
+        <a href="<?= urlPaginaUsuarios($pagina + 1, $q) ?>" class="btn btn-primary btn-sm">Siguiente &raquo;</a>
+    <?php endif; ?>
+
+    <span style="margin-left:8px;font-size:.8rem;color:#78909c">
+        <?= $total ?> usuario<?= $total !== 1 ? 's' : '' ?> encontrado<?= $total !== 1 ? 's' : '' ?>
+    </span>
+</div>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
