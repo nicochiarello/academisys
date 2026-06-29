@@ -21,14 +21,28 @@ $modelCiclo = new CicloModel($pdo);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     try {
-        if ($action === 'crear') {
-            $modelo->crear($_POST);
-            $msg = urlencode('Comisión creada correctamente.');
-            header('Location: ' . BASE_URL . '/controllers/bedel/comisiones_ctrl.php?msg=' . $msg);
+        switch ($action) {
+            case 'crear':
+                $modelo->crear($_POST);
+                $msg = urlencode('Comisión creada correctamente.');
+                break;
+            case 'editar':
+                $modelo->actualizar((int) $_POST['id_comision'], $_POST);
+                $msg = urlencode('Comisión actualizada correctamente.');
+                break;
+            case 'eliminar':
+                $modelo->eliminar((int) $_POST['id_comision']);
+                $msg = urlencode('Comisión eliminada.');
+                break;
+            default:
+                $msg = '';
         }
+        header('Location: ' . BASE_URL . '/controllers/bedel/comisiones_ctrl.php?msg=' . $msg);
     } catch (PDOException $e) {
-        /* T2 usa SIGNAL '45000' — errorInfo[2] contiene el MESSAGE_TEXT del trigger */
         $msg = urlencode($e->errorInfo[2] ?? $e->getMessage());
+        header('Location: ' . BASE_URL . '/controllers/bedel/comisiones_ctrl.php?err=' . $msg);
+    } catch (RuntimeException $e) {
+        $msg = urlencode($e->getMessage());
         header('Location: ' . BASE_URL . '/controllers/bedel/comisiones_ctrl.php?err=' . $msg);
     }
     exit;
@@ -39,6 +53,11 @@ $materias     = $modelMat->getAll();
 $profesores   = $modelProf->getAll();
 $aulas        = $modelAula->getAll();
 $ciclo_activo = $modelCiclo->getActivo();
+
+$editando = null;
+if (isset($_GET['editar'])) {
+    $editando = $modelo->getById((int) $_GET['editar']);
+}
 
 $mensaje  = $_GET['msg'] ?? ($_GET['err'] ?? null);
 $es_error = isset($_GET['err']);
