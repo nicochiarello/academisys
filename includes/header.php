@@ -11,9 +11,10 @@ if (!empty($_SESSION['debe_cambiar_password'])
     exit;
 }
 
-$rol        = $_SESSION['id_rol'] ?? 0;
-$nombre     = htmlspecialchars($_SESSION['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
-$nombre_rol = htmlspecialchars($_SESSION['nombre_rol'] ?? '', ENT_QUOTES, 'UTF-8');
+$rol          = $_SESSION['id_rol'] ?? 0;
+$nombre       = htmlspecialchars($_SESSION['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
+$nombre_rol   = htmlspecialchars($_SESSION['nombre_rol'] ?? '', ENT_QUOTES, 'UTF-8');
+$script_actual = basename($_SERVER['SCRIPT_NAME']);
 
 /* Garantizar que las variables de alerta estén siempre definidas en el scope de la vista */
 $mensaje  ??= null;
@@ -49,6 +50,11 @@ $es_error ??= false;
             transition: background .2s, color .2s;
         }
         nav ul li a:hover { background: #283593; color: #fff; }
+        nav ul li a.nav-activo {
+            background: #283593;
+            color: #fff;
+            border-bottom: 2px solid #7986cb;
+        }
         nav .user-area { display: flex; align-items: center; gap: 16px; font-size: .88rem; }
         nav .user-area span { color: #c5cae9; }
         nav .user-area a {
@@ -67,29 +73,33 @@ $es_error ??= false;
 <nav>
     <div class="brand">AcademiSys</div>
     <ul>
+        <?php
+        $a = fn(string $script, string $href, string $label) =>
+            '<a href="' . BASE_URL . $href . '" class="' . ($script_actual === $script ? 'nav-activo' : '') . '">' . $label . '</a>';
+        ?>
         <?php if ($rol === ROL_ADMIN): ?>
-            <li><a href="<?= BASE_URL ?>/controllers/admin/carreras_ctrl.php">Carreras</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/admin/materias_ctrl.php">Materias</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/admin/planes_ctrl.php">Plan de Estudio</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/admin/profesores_ctrl.php">Docentes</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/admin/aulas_ctrl.php">Aulas</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/admin/alumnos_ctrl.php">Alumnos</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/admin/ciclos_ctrl.php">Ciclos</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/admin/usuarios_ctrl.php">Usuarios</a></li>
+            <li><?= $a('carreras_ctrl.php',  '/controllers/admin/carreras_ctrl.php',  'Carreras') ?></li>
+            <li><?= $a('materias_ctrl.php',  '/controllers/admin/materias_ctrl.php',  'Materias') ?></li>
+            <li><?= $a('planes_ctrl.php',    '/controllers/admin/planes_ctrl.php',    'Plan de Estudio') ?></li>
+            <li><?= $a('profesores_ctrl.php','/controllers/admin/profesores_ctrl.php','Docentes') ?></li>
+            <li><?= $a('aulas_ctrl.php',     '/controllers/admin/aulas_ctrl.php',     'Aulas') ?></li>
+            <li><?= $a('alumnos_ctrl.php',   '/controllers/admin/alumnos_ctrl.php',   'Alumnos') ?></li>
+            <li><?= $a('ciclos_ctrl.php',    '/controllers/admin/ciclos_ctrl.php',    'Ciclos') ?></li>
+            <li><?= $a('usuarios_ctrl.php',  '/controllers/admin/usuarios_ctrl.php',  'Usuarios') ?></li>
         <?php elseif ($rol === ROL_BEDEL): ?>
-            <li><a href="<?= BASE_URL ?>/controllers/bedel/comisiones_ctrl.php">Comisiones</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/bedel/inscripciones_ctrl.php">Inscripciones</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/bedel/asistencias_ctrl.php">Asistencias</a></li>
+            <li><?= $a('comisiones_ctrl.php',   '/controllers/bedel/comisiones_ctrl.php',   'Comisiones') ?></li>
+            <li><?= $a('inscripciones_ctrl.php','/controllers/bedel/inscripciones_ctrl.php','Inscripciones') ?></li>
+            <li><?= $a('asistencias_ctrl.php',  '/controllers/bedel/asistencias_ctrl.php',  'Asistencias') ?></li>
         <?php elseif ($rol === ROL_DOCENTE): ?>
-            <li><a href="<?= BASE_URL ?>/controllers/docente/comisiones_ctrl.php">Mis Comisiones</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/docente/calificaciones_ctrl.php">Calificaciones</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/docente/asistencias_ctrl.php">Asistencias</a></li>
+            <li><?= $a('comisiones_ctrl.php',   '/controllers/docente/comisiones_ctrl.php',   'Mis Comisiones') ?></li>
+            <li><?= $a('calificaciones_ctrl.php','/controllers/docente/calificaciones_ctrl.php','Calificaciones') ?></li>
+            <li><?= $a('asistencias_ctrl.php',  '/controllers/docente/asistencias_ctrl.php',  'Asistencias') ?></li>
         <?php elseif ($rol === ROL_ALUMNO): ?>
-            <li><a href="<?= BASE_URL ?>/controllers/alumno/cursadas_ctrl.php">Mis Cursadas</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/alumno/notas_ctrl.php">Mis Notas</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/alumno/asistencias_ctrl.php">Mis Asistencias</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/alumno/carrera_ctrl.php">Mi Carrera</a></li>
-            <li><a href="<?= BASE_URL ?>/controllers/alumno/titulo_ctrl.php">Mi Título</a></li>
+            <li><?= $a('cursadas_ctrl.php',  '/controllers/alumno/cursadas_ctrl.php',  'Mis Cursadas') ?></li>
+            <li><?= $a('notas_ctrl.php',     '/controllers/alumno/notas_ctrl.php',     'Mis Notas') ?></li>
+            <li><?= $a('asistencias_ctrl.php','/controllers/alumno/asistencias_ctrl.php','Mis Asistencias') ?></li>
+            <li><?= $a('carrera_ctrl.php',   '/controllers/alumno/carrera_ctrl.php',   'Mi Carrera') ?></li>
+            <li><?= $a('titulo_ctrl.php',    '/controllers/alumno/titulo_ctrl.php',    'Mi Título') ?></li>
         <?php endif; ?>
     </ul>
     <div class="user-area">
