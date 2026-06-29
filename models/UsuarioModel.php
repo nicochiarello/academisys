@@ -4,6 +4,23 @@ class UsuarioModel
 {
     public function __construct(private PDO $pdo) {}
 
+    public function getById(int $id): array|false
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT u.*, r.nombre AS nombre_rol,
+                    CONCAT(al.apellido, \', \', al.nombre) AS nombre_alumno,
+                    CONCAT(p.apellido,  \', \', p.nombre)  AS nombre_profesor
+             FROM Usuario u
+             JOIN Rol r ON r.id_rol = u.id_rol
+             LEFT JOIN Alumno  al ON al.legajo      = u.legajo_alumno
+             LEFT JOIN Profesor p  ON p.id_profesor = u.id_profesor
+             WHERE u.id_usuario = :id
+             LIMIT 1'
+        );
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch();
+    }
+
     public function getByEmail(string $email): array|false
     {
         $stmt = $this->pdo->prepare(

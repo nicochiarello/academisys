@@ -1,9 +1,15 @@
 <?php require_once __DIR__ . '/_style.php'; ?>
 <?php
-$q       ??= '';
-$pagina  ??= 1;
-$paginas ??= 1;
-$total   ??= 0;
+$q          ??= '';
+$pagina     ??= 1;
+$paginas    ??= 1;
+$total      ??= 0;
+$mensaje    ??= null;
+$es_error   ??= false;
+$usuarios   ??= [];
+$alumnos    ??= [];
+$profesores ??= [];
+$roles      ??= [];
 
 function urlPaginaUsuarios(int $p, string $q): string {
     $params = ['page' => $p];
@@ -120,6 +126,8 @@ function urlPaginaUsuarios(int $p, string $q): string {
                     </span>
                 </td>
                 <td style="white-space:nowrap">
+                    <a href="<?= BASE_URL ?>/controllers/perfil_ctrl.php?id_usuario=<?= (int) $u['id_usuario'] ?>"
+                       class="btn btn-info btn-sm">Perfil</a>
                     <?php if ($u['activo']): ?>
                     <form method="POST" action="<?= BASE_URL ?>/controllers/admin/usuarios_ctrl.php"
                           style="display:inline"

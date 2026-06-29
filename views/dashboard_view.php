@@ -62,9 +62,14 @@ $nombre_rol = htmlspecialchars($_SESSION['nombre_rol'] ?? '', ENT_QUOTES, 'UTF-8
     }
 </style>
 
-<div class="bienvenida">
-    <h2>Bienvenido, <?= $nombre ?></h2>
-    <p>Accediste como <strong><?= $nombre_rol ?></strong>. Aquí está tu resumen del día.</p>
+<div class="bienvenida" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+        <h2>Bienvenido, <?= $nombre ?></h2>
+        <p>Accediste como <strong><?= $nombre_rol ?></strong>. Aquí está tu resumen del día.</p>
+    </div>
+    <?php if (((int) ($_SESSION['id_rol'] ?? 0)) === ROL_ALUMNO): ?>
+        <a href="<?= BASE_URL ?>/controllers/perfil_ctrl.php" class="btn btn-primary" style="white-space:nowrap">Mi Perfil</a>
+    <?php endif; ?>
 </div>
 
 <div class="kpi-grid">

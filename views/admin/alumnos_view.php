@@ -144,6 +144,8 @@ function urlPaginaAlumnos(int $p, string $q): string {
                     </span>
                 </td>
                 <td style="white-space:nowrap">
+                    <a href="<?= BASE_URL ?>/controllers/perfil_ctrl.php?legajo=<?= urlencode($a['legajo']) ?>"
+                       class="btn btn-primary btn-sm">Perfil</a>
                     <a href="<?= BASE_URL ?>/controllers/admin/alumnos_ctrl.php?editar=<?= urlencode($a['legajo']) ?>"
                        class="btn btn-info btn-sm">Editar</a>
                     <?php if ($a['activo']): ?>
