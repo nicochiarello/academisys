@@ -1,11 +1,11 @@
 <?php require_once __DIR__ . '/_style.php'; ?>
 <?php
-$comisiones          ??= [];
-$alumnos_encontrados ??= [];
-$inscripciones_recientes ??= [];
-$q_alumno            ??= '';
-$mensaje             ??= null;
-$es_error            ??= false;
+$comisiones                ??= [];
+$alumnos_encontrados       ??= [];
+$inscripciones_por_carrera ??= [];
+$q_alumno                  ??= '';
+$mensaje                   ??= null;
+$es_error                  ??= false;
 ?>
 
 <div class="sec-header">
@@ -52,7 +52,9 @@ $es_error            ??= false;
                 <td style="font-size:.8rem"><?= htmlspecialchars($al['nombre_carrera'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td>
                     <button type="button" class="btn btn-primary btn-sm"
-                            onclick="seleccionarAlumno(<?= json_encode($al['legajo'], JSON_HEX_QUOT) ?>, <?= json_encode($al['apellido'] . ', ' . $al['nombre'], JSON_HEX_QUOT) ?>)">
+                            data-legajo="<?= htmlspecialchars($al['legajo'], ENT_QUOTES, 'UTF-8') ?>"
+                            data-nombre="<?= htmlspecialchars($al['apellido'] . ', ' . $al['nombre'], ENT_QUOTES, 'UTF-8') ?>"
+                            onclick="seleccionarAlumno(this.dataset.legajo, this.dataset.nombre)">
                         Seleccionar
                     </button>
                 </td>
@@ -98,60 +100,75 @@ $es_error            ??= false;
     </form>
 </div>
 
-<!-- Inscripciones recientes del ciclo activo -->
-<h2 style="font-size:1.1rem;color:#1a237e;margin-bottom:14px;font-weight:700">
-    Inscripciones recientes — ciclo activo
+<!-- Inscripciones del ciclo activo agrupadas por carrera → materia -->
+<h2 style="font-size:1.1rem;color:#1a237e;margin-bottom:16px;font-weight:700">
+    Inscripciones — ciclo activo
 </h2>
 
-<div class="tabla-wrap">
-    <table class="tabla">
-        <thead>
-            <tr>
-                <th>#</th><th>Legajo</th><th>Alumno</th><th>Materia</th>
-                <th>Estado</th><th>Fecha</th><th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($inscripciones_recientes as $i): ?>
-            <tr>
-                <td><?= (int) $i['id_inscripcion'] ?></td>
-                <td><?= htmlspecialchars($i['id_alumno'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td><?= htmlspecialchars($i['apellido'] . ', ' . $i['nombre'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td><?= htmlspecialchars($i['materia'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td>
-                    <?php $badge_class = match($i['estado']) {
-                        'activa'      => 'badge-act',
-                        'aprobada'    => 'badge-ok',
-                        'baja'        => 'badge-off',
-                        'desaprobada' => 'badge-warn',
-                        default       => ''
-                    }; ?>
-                    <span class="badge <?= $badge_class ?>">
-                        <?= htmlspecialchars(ucfirst($i['estado']), ENT_QUOTES, 'UTF-8') ?>
-                    </span>
-                </td>
-                <td><?= htmlspecialchars($i['fecha_inscripcion'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
-                <td>
-                    <?php if ($i['estado'] === 'activa'): ?>
-                    <form method="POST" action="<?= BASE_URL ?>/controllers/bedel/inscripciones_ctrl.php"
-                          style="display:inline"
-                          onsubmit="return confirm('¿Dar de baja la inscripción de <?= htmlspecialchars($i['apellido'] . ', ' . $i['nombre'], ENT_QUOTES, 'UTF-8') ?>?')">
-                        <input type="hidden" name="action" value="baja">
-                        <input type="hidden" name="id_inscripcion" value="<?= (int) $i['id_inscripcion'] ?>">
-                        <button type="submit" class="btn btn-danger btn-sm">Baja</button>
-                    </form>
-                    <?php else: ?>
-                        <span style="color:#ccc;font-size:.75rem">—</span>
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        <?php if (empty($inscripciones_recientes)): ?>
-            <tr><td colspan="7" style="text-align:center;color:#90a4ae">Sin inscripciones en el ciclo activo.</td></tr>
-        <?php endif; ?>
-        </tbody>
-    </table>
+<?php if (empty($inscripciones_por_carrera)): ?>
+    <p style="color:#90a4ae;text-align:center;padding:24px 0">Sin inscripciones en el ciclo activo.</p>
+<?php else: ?>
+<?php foreach ($inscripciones_por_carrera as $carrera => $materias): ?>
+
+<div style="margin-bottom:28px">
+    <div style="background:#1a237e;color:#fff;padding:10px 16px;border-radius:8px 8px 0 0;font-weight:700;font-size:.95rem;letter-spacing:.3px">
+        <?= htmlspecialchars($carrera, ENT_QUOTES, 'UTF-8') ?>
+    </div>
+
+    <?php foreach ($materias as $materia => $inscripciones): ?>
+    <div style="border:1px solid #e0e0e0;border-top:none;<?= next($materias) === false ? 'border-radius:0 0 8px 8px' : '' ?>">
+        <div style="background:#e8eaf6;padding:7px 16px;font-size:.85rem;font-weight:600;color:#283593;border-bottom:1px solid #e0e0e0">
+            <?= htmlspecialchars($materia, ENT_QUOTES, 'UTF-8') ?>
+            <span style="font-weight:400;color:#7986cb;margin-left:8px">(<?= count($inscripciones) ?> inscripto<?= count($inscripciones) !== 1 ? 's' : '' ?>)</span>
+        </div>
+        <table class="tabla" style="margin:0;border-radius:0;box-shadow:none">
+            <thead>
+                <tr>
+                    <th>Legajo</th><th>Alumno</th><th>Estado</th><th>Fecha</th><th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($inscripciones as $i): ?>
+                <tr>
+                    <td><?= htmlspecialchars($i['id_alumno'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars($i['apellido'] . ', ' . $i['nombre'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td>
+                        <?php $badge_class = match($i['estado']) {
+                            'activa'      => 'badge-act',
+                            'aprobada'    => 'badge-ok',
+                            'baja'        => 'badge-off',
+                            'desaprobada' => 'badge-warn',
+                            default       => ''
+                        }; ?>
+                        <span class="badge <?= $badge_class ?>">
+                            <?= htmlspecialchars(ucfirst($i['estado']), ENT_QUOTES, 'UTF-8') ?>
+                        </span>
+                    </td>
+                    <td><?= htmlspecialchars($i['fecha_inscripcion'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td>
+                        <?php if ($i['estado'] === 'activa'): ?>
+                        <form method="POST" action="<?= BASE_URL ?>/controllers/bedel/inscripciones_ctrl.php"
+                              style="display:inline"
+                              data-nombre="<?= htmlspecialchars($i['apellido'] . ', ' . $i['nombre'], ENT_QUOTES, 'UTF-8') ?>"
+                              onsubmit="return confirm('¿Dar de baja la inscripción de ' + this.dataset.nombre + '?')">
+                            <input type="hidden" name="action" value="baja">
+                            <input type="hidden" name="id_inscripcion" value="<?= (int) $i['id_inscripcion'] ?>">
+                            <button type="submit" class="btn btn-danger btn-sm">Baja</button>
+                        </form>
+                        <?php else: ?>
+                            <span style="color:#ccc;font-size:.75rem">—</span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endforeach; ?>
 </div>
+
+<?php endforeach; ?>
+<?php endif; ?>
 
 <script>
 function seleccionarAlumno(legajo, nombre) {

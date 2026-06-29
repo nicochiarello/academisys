@@ -71,20 +71,24 @@ if ($q_alumno !== '') {
     $alumnos_encontrados = $stmt->fetchAll();
 }
 
-/* Últimas 20 inscripciones del ciclo activo — query directa */
+/* Inscripciones del ciclo activo agrupadas por carrera → materia */
 $stmt = $pdo->query(
     'SELECT i.id_inscripcion, i.id_alumno, a.apellido, a.nombre,
-            m.nombre AS materia, i.estado, i.fecha_inscripcion
+            m.nombre AS materia, i.estado, i.fecha_inscripcion,
+            car.nombre AS carrera
      FROM Inscripcion i
-     JOIN Alumno a ON a.legajo = i.id_alumno
-     JOIN Comision c ON c.id_comision = i.id_comision
-     JOIN Materia m ON m.id_materia = c.id_materia
-     JOIN Ciclo_Academico ca ON ca.id_ciclo = c.id_ciclo
+     JOIN Alumno a     ON a.legajo        = i.id_alumno
+     JOIN Carrera car  ON car.id_carrera  = a.id_carrera
+     JOIN Comision co  ON co.id_comision  = i.id_comision
+     JOIN Materia m    ON m.id_materia    = co.id_materia
+     JOIN Ciclo_Academico ca ON ca.id_ciclo = co.id_ciclo
      WHERE ca.activo = 1
-     ORDER BY i.fecha_inscripcion DESC
-     LIMIT 20'
+     ORDER BY car.nombre, m.nombre, a.apellido, a.nombre'
 );
-$inscripciones_recientes = $stmt->fetchAll();
+$inscripciones_por_carrera = [];
+foreach ($stmt->fetchAll() as $row) {
+    $inscripciones_por_carrera[$row['carrera']][$row['materia']][] = $row;
+}
 
 $mensaje  = $_GET['msg'] ?? ($_GET['err'] ?? null);
 $es_error = isset($_GET['err']);
