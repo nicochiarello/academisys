@@ -84,6 +84,14 @@
                         <input type="hidden" name="id" value="<?= (int) $c['id_carrera'] ?>">
                         <button type="submit" class="btn btn-danger btn-sm">Baja</button>
                     </form>
+                    <?php else: ?>
+                    <form method="POST" action="<?= BASE_URL ?>/controllers/admin/carreras_ctrl.php"
+                          style="display:inline"
+                          onsubmit="return confirm('¿Reactivar la carrera «<?= htmlspecialchars($c['nombre'], ENT_QUOTES, 'UTF-8') ?>»?')">
+                        <input type="hidden" name="action" value="alta">
+                        <input type="hidden" name="id" value="<?= (int) $c['id_carrera'] ?>">
+                        <button type="submit" class="btn btn-primary btn-sm">Alta</button>
+                    </form>
                     <?php endif; ?>
                 </td>
             </tr>

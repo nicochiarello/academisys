@@ -53,4 +53,10 @@ class CarreraModel
         $stmt = $this->pdo->prepare('UPDATE Carrera SET activa = 0 WHERE id_carrera = :id');
         return $stmt->execute([':id' => $id]);
     }
+
+    public function darAlta(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE Carrera SET activa = 1 WHERE id_carrera = :id');
+        return $stmt->execute([':id' => $id]);
+    }
 }

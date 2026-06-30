@@ -25,6 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $modelo->darBaja((int) $_POST['id']);
                 $msg = urlencode('Carrera dada de baja.');
                 break;
+            case 'alta':
+                $modelo->darAlta((int) $_POST['id']);
+                $msg = urlencode('Carrera reactivada correctamente.');
+                break;
             default:
                 $msg = '';
         }
