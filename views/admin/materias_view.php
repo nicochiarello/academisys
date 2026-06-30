@@ -121,6 +121,13 @@
                        class="btn btn-info btn-sm">Editar</a>
                     <a href="<?= BASE_URL ?>/controllers/admin/materias_ctrl.php?correlativas=<?= (int) $m['id_materia'] ?>"
                        class="btn btn-warn btn-sm">Correlativas</a>
+                    <form method="POST" action="<?= BASE_URL ?>/controllers/admin/materias_ctrl.php"
+                          style="display:inline"
+                          onsubmit="return confirm('¿Eliminar la materia «<?= htmlspecialchars($m['nombre'], ENT_QUOTES, 'UTF-8') ?>»?')">
+                        <input type="hidden" name="action" value="eliminar">
+                        <input type="hidden" name="id" value="<?= (int) $m['id_materia'] ?>">
+                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
                 </td>
             </tr>
         <?php endforeach; ?>

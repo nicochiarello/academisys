@@ -82,20 +82,34 @@ class MateriaModel
         return $stmt->fetchAll();
     }
 
+    public function eliminar(int $id): bool
+    {
+        $this->pdo->prepare('DELETE FROM Correlativa WHERE id_materia = :id OR id_correlativa = :id')
+                  ->execute([':id' => $id]);
+        $stmt = $this->pdo->prepare('DELETE FROM Materia WHERE id_materia = :id');
+        return $stmt->execute([':id' => $id]);
+    }
+
     public function setCorrelativas(int $id_materia, array $ids_correlativas): bool
     {
-        $this->pdo->prepare('DELETE FROM Correlativa WHERE id_materia = :id')
-                  ->execute([':id' => $id_materia]);
+        $this->pdo->beginTransaction();
+        try {
+            $this->pdo->prepare('DELETE FROM Correlativa WHERE id_materia = :id')
+                      ->execute([':id' => $id_materia]);
 
-        if (empty($ids_correlativas)) {
-            return true;
-        }
+            if (!empty($ids_correlativas)) {
+                $stmt = $this->pdo->prepare(
+                    'INSERT INTO Correlativa (id_materia, id_correlativa) VALUES (?, ?)'
+                );
+                foreach ($ids_correlativas as $id_corr) {
+                    $stmt->execute([$id_materia, (int) $id_corr]);
+                }
+            }
 
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO Correlativa (id_materia, id_correlativa) VALUES (?, ?)'
-        );
-        foreach ($ids_correlativas as $id_corr) {
-            $stmt->execute([$id_materia, (int) $id_corr]);
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
         }
         return true;
     }

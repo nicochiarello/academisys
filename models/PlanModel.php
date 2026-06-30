@@ -48,4 +48,17 @@ class PlanModel
             ':descripcion' => $datos['descripcion'] ?? null,
         ]);
     }
+
+    public function tieneMaterias(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM Materia WHERE id_plan = :id');
+        $stmt->execute([':id' => $id]);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function eliminar(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM Plan WHERE id_plan = :id');
+        return $stmt->execute([':id' => $id]);
+    }
 }

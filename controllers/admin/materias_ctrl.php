@@ -31,6 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 $msg = urlencode('Correlativas actualizadas.');
                 break;
+            case 'eliminar':
+                $modelo->eliminar((int) $_POST['id']);
+                $msg = urlencode('Materia eliminada correctamente.');
+                break;
             default:
                 $msg = '';
         }
