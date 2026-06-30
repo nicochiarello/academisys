@@ -11,6 +11,14 @@
     </div>
 <?php endif; ?>
 
+<?php if ($password_temporal ?? null): ?>
+    <div class="alert alert-ok">
+        Usuario generado para <strong><?= htmlspecialchars($email_docente_nuevo ?? '', ENT_QUOTES, 'UTF-8') ?></strong> —
+        contraseña temporal: <code style="font-size:1rem"><?= htmlspecialchars($password_temporal, ENT_QUOTES, 'UTF-8') ?></code>
+        <br><small>Comunicásela al docente. Deberá cambiarla en su primer ingreso. No se mostrará de nuevo.</small>
+    </div>
+<?php endif; ?>
+
 <?php if ($editando || isset($_GET['nuevo'])): ?>
 <div class="card">
     <h2><?= $editando ? 'Editar Docente' : 'Nuevo Docente' ?></h2>

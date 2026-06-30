@@ -70,53 +70,70 @@ class ComisionModel
 
     public function actualizar(int $id, array $datos): bool
     {
-        // Verificar conflicto aula+turno+ciclo excluyendo la comisión actual
-        $stmt = $this->pdo->prepare(
-            'SELECT COUNT(*) FROM Comision
-             WHERE id_aula = :aula AND turno = :turno AND id_ciclo = :ciclo
-               AND id_comision != :id'
-        );
-        $stmt->execute([
-            ':aula'  => $datos['id_aula'],
-            ':turno' => $datos['turno'],
-            ':ciclo' => $datos['id_ciclo'],
-            ':id'    => $id,
-        ]);
-        if ($stmt->fetchColumn() > 0) {
-            throw new RuntimeException('El aula ya tiene una comisión asignada en ese turno y ciclo.');
+        $this->pdo->beginTransaction();
+        try {
+            // Verificar conflicto aula+turno+ciclo excluyendo la comisión actual
+            $stmt = $this->pdo->prepare(
+                'SELECT COUNT(*) FROM Comision
+                 WHERE id_aula = :aula AND turno = :turno AND id_ciclo = :ciclo
+                   AND id_comision != :id
+                 FOR UPDATE'
+            );
+            $stmt->execute([
+                ':aula'  => $datos['id_aula'],
+                ':turno' => $datos['turno'],
+                ':ciclo' => $datos['id_ciclo'],
+                ':id'    => $id,
+            ]);
+            if ($stmt->fetchColumn() > 0) {
+                $this->pdo->rollBack();
+                throw new RuntimeException('El aula ya tiene una comisión asignada en ese turno y ciclo.');
+            }
+
+            $stmt2 = $this->pdo->prepare(
+                'UPDATE Comision
+                 SET id_profesor = :id_profesor, id_aula = :id_aula,
+                     turno = :turno, cupo_maximo = :cupo_maximo
+                 WHERE id_comision = :id'
+            );
+            $ok = $stmt2->execute([
+                ':id_profesor' => $datos['id_profesor'],
+                ':id_aula'     => $datos['id_aula'],
+                ':turno'       => $datos['turno'],
+                ':cupo_maximo' => $datos['cupo_maximo'],
+                ':id'          => $id,
+            ]);
+
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
         }
-
-        $stmt2 = $this->pdo->prepare(
-            'UPDATE Comision
-             SET id_profesor = :id_profesor, id_aula = :id_aula,
-                 turno = :turno, cupo_maximo = :cupo_maximo
-             WHERE id_comision = :id'
-        );
-        return $stmt2->execute([
-            ':id_profesor' => $datos['id_profesor'],
-            ':id_aula'     => $datos['id_aula'],
-            ':turno'       => $datos['turno'],
-            ':cupo_maximo' => $datos['cupo_maximo'],
-            ':id'          => $id,
-        ]);
-    }
-
-    public function tieneInscripciones(int $id): bool
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT COUNT(*) FROM Inscripcion WHERE id_comision = :id'
-        );
-        $stmt->execute([':id' => $id]);
-        return $stmt->fetchColumn() > 0;
+        return $ok;
     }
 
     public function eliminar(int $id): bool
     {
-        if ($this->tieneInscripciones($id)) {
-            throw new RuntimeException('No se puede eliminar: la comisión tiene inscripciones registradas.');
+        $this->pdo->beginTransaction();
+        try {
+            // Bloquear la fila antes de verificar para evitar inscripciones concurrentes
+            $stmt = $this->pdo->prepare(
+                'SELECT COUNT(*) FROM Inscripcion WHERE id_comision = :id FOR UPDATE'
+            );
+            $stmt->execute([':id' => $id]);
+            if ($stmt->fetchColumn() > 0) {
+                $this->pdo->rollBack();
+                throw new RuntimeException('No se puede eliminar: la comisión tiene inscripciones registradas.');
+            }
+
+            $stmt2 = $this->pdo->prepare('DELETE FROM Comision WHERE id_comision = :id');
+            $ok = $stmt2->execute([':id' => $id]);
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
         }
-        $stmt = $this->pdo->prepare('DELETE FROM Comision WHERE id_comision = :id');
-        return $stmt->execute([':id' => $id]);
+        return $ok;
     }
 
     /* Puede lanzar PDOException si el trigger rechaza la inserción */
