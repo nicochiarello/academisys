@@ -49,23 +49,35 @@ class UsuarioModel
         return $stmt->fetchAll();
     }
 
-    private function whereParams(string $q): array
+    private function whereParams(string $q, int $id_rol = 0): array
     {
-        if ($q === '') return ['', []];
-        $like = "%$q%";
-        $where = 'WHERE (u.email        LIKE ?
-                      OR u.legajo_alumno LIKE ?
-                      OR al.dni          LIKE ?
-                      OR al.nombre       LIKE ?
-                      OR al.apellido     LIKE ?
-                      OR p.nombre        LIKE ?
-                      OR p.apellido      LIKE ?)';
-        return [$where, array_fill(0, 7, $like)];
+        $conditions = [];
+        $params     = [];
+
+        if ($q !== '') {
+            $like = "%$q%";
+            $conditions[] = '(u.email        LIKE ?
+                           OR u.legajo_alumno LIKE ?
+                           OR al.dni          LIKE ?
+                           OR al.nombre       LIKE ?
+                           OR al.apellido     LIKE ?
+                           OR p.nombre        LIKE ?
+                           OR p.apellido      LIKE ?)';
+            $params = array_fill(0, 7, $like);
+        }
+
+        if ($id_rol > 0) {
+            $conditions[] = 'u.id_rol = ?';
+            $params[]     = $id_rol;
+        }
+
+        $where = empty($conditions) ? '' : 'WHERE ' . implode(' AND ', $conditions);
+        return [$where, $params];
     }
 
-    public function buscar(string $q, int $limit, int $offset): array
+    public function buscar(string $q, int $limit, int $offset, int $id_rol = 0): array
     {
-        [$where, $params] = $this->whereParams($q);
+        [$where, $params] = $this->whereParams($q, $id_rol);
         $stmt = $this->pdo->prepare(
             "SELECT u.*, r.nombre AS nombre_rol,
                     CONCAT(al.apellido, ', ', al.nombre) AS nombre_alumno,
@@ -82,9 +94,9 @@ class UsuarioModel
         return $stmt->fetchAll();
     }
 
-    public function contar(string $q): int
+    public function contar(string $q, int $id_rol = 0): int
     {
-        [$where, $params] = $this->whereParams($q);
+        [$where, $params] = $this->whereParams($q, $id_rol);
         $stmt = $this->pdo->prepare(
             "SELECT COUNT(*) FROM Usuario u
              LEFT JOIN Alumno  al ON al.legajo     = u.legajo_alumno

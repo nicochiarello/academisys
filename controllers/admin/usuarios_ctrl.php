@@ -46,13 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 const POR_PAGINA = 20;
 
 $q       = trim($_GET['q'] ?? '');
+$id_rol  = (int) ($_GET['rol'] ?? 0);
 $pagina  = max(1, (int) ($_GET['page'] ?? 1));
-$total   = $modelo->contar($q);
+$total   = $modelo->contar($q, $id_rol);
 $paginas = max(1, (int) ceil($total / POR_PAGINA));
 $pagina  = min($pagina, $paginas);
 $offset  = ($pagina - 1) * POR_PAGINA;
 
-$usuarios   = $modelo->buscar($q, POR_PAGINA, $offset);
+$usuarios   = $modelo->buscar($q, POR_PAGINA, $offset, $id_rol);
 $alumnos    = $modelAlum->getAll();
 $profesores = $modelProf->getAll();
 $roles      = $pdo->query('SELECT * FROM Rol ORDER BY id_rol')->fetchAll();

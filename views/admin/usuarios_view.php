@@ -1,6 +1,7 @@
 <?php require_once __DIR__ . '/_style.php'; ?>
 <?php
 $q          ??= '';
+$id_rol     ??= 0;
 $pagina     ??= 1;
 $paginas    ??= 1;
 $total      ??= 0;
@@ -11,9 +12,10 @@ $alumnos    ??= [];
 $profesores ??= [];
 $roles      ??= [];
 
-function urlPaginaUsuarios(int $p, string $q): string {
+function urlPaginaUsuarios(int $p, string $q, int $id_rol): string {
     $params = ['page' => $p];
-    if ($q !== '') $params['q'] = $q;
+    if ($q !== '')    $params['q']   = $q;
+    if ($id_rol > 0)  $params['rol'] = $id_rol;
     return BASE_URL . '/controllers/admin/usuarios_ctrl.php?' . http_build_query($params);
 }
 ?>
@@ -85,14 +87,22 @@ function urlPaginaUsuarios(int $p, string $q): string {
 </div>
 <?php endif; ?>
 
-<!-- Barra de búsqueda -->
+<!-- Barra de búsqueda + filtro por rol -->
 <form method="GET" action="<?= BASE_URL ?>/controllers/admin/usuarios_ctrl.php"
-      style="display:flex;gap:8px;margin-bottom:16px">
+      style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
     <input type="text" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>"
            placeholder="Buscar por nombre, DNI o legajo…"
-           style="flex:1;padding:9px 12px;border:1.5px solid #cfd8dc;border-radius:6px;font-size:.9rem">
-    <button type="submit" class="btn btn-primary">Buscar</button>
-    <?php if ($q !== ''): ?>
+           style="flex:1;min-width:180px;padding:9px 12px;border:1.5px solid #cfd8dc;border-radius:6px;font-size:.9rem">
+    <select name="rol" style="padding:9px 12px;border:1.5px solid #cfd8dc;border-radius:6px;font-size:.9rem;color:#37474f;min-width:150px">
+        <option value="0">Todos los roles</option>
+        <?php foreach ($roles as $r): ?>
+            <option value="<?= (int) $r['id_rol'] ?>" <?= $id_rol === (int) $r['id_rol'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($r['nombre'], ENT_QUOTES, 'UTF-8') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <?php if ($q !== '' || $id_rol > 0): ?>
         <a href="<?= BASE_URL ?>/controllers/admin/usuarios_ctrl.php" class="btn btn-warn">Limpiar</a>
     <?php endif; ?>
 </form>
@@ -158,21 +168,21 @@ function urlPaginaUsuarios(int $p, string $q): string {
 <?php if ($paginas > 1): ?>
 <div style="display:flex;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap">
     <?php if ($pagina > 1): ?>
-        <a href="<?= urlPaginaUsuarios($pagina - 1, $q) ?>" class="btn btn-primary btn-sm">&laquo; Anterior</a>
+        <a href="<?= urlPaginaUsuarios($pagina - 1, $q, $id_rol) ?>" class="btn btn-primary btn-sm">&laquo; Anterior</a>
     <?php endif; ?>
 
     <?php for ($p = 1; $p <= $paginas; $p++): ?>
         <?php if ($p === $pagina): ?>
             <span style="padding:4px 10px;background:#1a237e;color:#fff;border-radius:5px;font-size:.82rem;font-weight:700"><?= $p ?></span>
         <?php elseif (abs($p - $pagina) <= 2 || $p === 1 || $p === $paginas): ?>
-            <a href="<?= urlPaginaUsuarios($p, $q) ?>" class="btn btn-primary btn-sm" style="background:#e8eaf6;color:#1a237e"><?= $p ?></a>
+            <a href="<?= urlPaginaUsuarios($p, $q, $id_rol) ?>" class="btn btn-primary btn-sm" style="background:#e8eaf6;color:#1a237e"><?= $p ?></a>
         <?php elseif (abs($p - $pagina) === 3): ?>
             <span style="color:#90a4ae;font-size:.82rem">…</span>
         <?php endif; ?>
     <?php endfor; ?>
 
     <?php if ($pagina < $paginas): ?>
-        <a href="<?= urlPaginaUsuarios($pagina + 1, $q) ?>" class="btn btn-primary btn-sm">Siguiente &raquo;</a>
+        <a href="<?= urlPaginaUsuarios($pagina + 1, $q, $id_rol) ?>" class="btn btn-primary btn-sm">Siguiente &raquo;</a>
     <?php endif; ?>
 
     <span style="margin-left:8px;font-size:.8rem;color:#78909c">
